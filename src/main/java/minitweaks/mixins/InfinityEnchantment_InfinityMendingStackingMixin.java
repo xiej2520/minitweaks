@@ -13,14 +13,14 @@ import net.minecraft.entity.EquipmentSlot;
 
 @Mixin(InfinityEnchantment.class)
 public abstract class InfinityEnchantment_InfinityMendingStackingMixin extends Enchantment {
-    protected InfinityEnchantment_InfinityMendingStackingMixin(Rarity weight, EnchantmentTarget type, EquipmentSlot[] slotTypes) {
+    protected InfinityEnchantment_InfinityMendingStackingMixin(Weight weight, EnchantmentTarget type, EquipmentSlot[] slotTypes) {
         super(weight, type, slotTypes);
     }
 
-    @Inject(method = "canAccept", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "differs", at = @At("HEAD"), cancellable = true)
     private void modifyCanAccept(Enchantment other, CallbackInfoReturnable<Boolean> cir) {
         if(MiniTweaksSettings.infinityMendingStacking) {
-            cir.setReturnValue(super.canAccept(other));
+            cir.setReturnValue(super.differs(other));
         }
     }
 }

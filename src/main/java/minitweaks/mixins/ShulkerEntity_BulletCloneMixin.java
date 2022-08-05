@@ -28,10 +28,10 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
     }
 
     @Shadow
-    protected abstract boolean isClosed();
+    protected abstract boolean method_7124();
 
     @Shadow
-    protected abstract boolean tryTeleport();
+    protected abstract boolean method_7127();
 
     // shulker cloning from 20w45a
     @Inject(method = "damage", at = @At("RETURN"), cancellable = true)
@@ -49,9 +49,9 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
         Vec3d pos = this.getPos();
         Box box = this.getBoundingBox();
         // if shulker is open, try to teleport, and spawn new shulker if successful
-        if(!this.isClosed() && this.tryTeleport()) {
+        if(!this.method_7124() && this.method_7127()) {
             // get odds of successfully cloning based on how many shulkers are within 8 blocks (17x17x17 area)
-            int shulkersCount = this.world.getEntitiesByType(EntityType.SHULKER, box.expand(8.0D), Entity::isAlive).size();
+            int shulkersCount = this.world.getEntities(EntityType.SHULKER, box.expand(8.0D), Entity::isAlive).size();
             float cloneOdds = (float) (shulkersCount - 1) / 5.0F;
             if(cloneOdds <= this.world.random.nextFloat()) {
                 ShulkerEntity shulkerEntity = EntityType.SHULKER.create(this.world);
@@ -63,7 +63,7 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
                 }
 
 
-                shulkerEntity.refreshPositionAfterTeleport(pos);
+                shulkerEntity.positAfterTeleport(pos.x, pos.y, pos.z);
                 this.world.spawnEntity(shulkerEntity);
             }
         }

@@ -21,7 +21,7 @@ public abstract class VillagerEntity_ExplodeBedMixin {
     private void explodeBed(BlockPos pos, CallbackInfo ci) {
         World world = ((VillagerEntity) (Object) this).world;
         // if rule enabled and beds explode in dimension
-        if(MiniTweaksSettings.villagersExplodeBeds && !world.getDimension().isBedWorking()) {
+        if(MiniTweaksSettings.villagersExplodeBeds && !world.getDimension().canPlayersSleep()) {
             // remove bed
             BlockState state = world.getBlockState(pos);
             world.removeBlock(pos, false);
@@ -31,8 +31,8 @@ public abstract class VillagerEntity_ExplodeBedMixin {
             }
 
             // create explosion
-            Explosion.DestructionType type = world.getGameRules().getBoolean(GameRules.DO_MOB_GRIEFING) ? Explosion.DestructionType.DESTROY : Explosion.DestructionType.NONE;
-            world.createExplosion(null, DamageSource.badRespawnPoint(), null, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 5.0F, true, type);
+            Explosion.DestructionType type = world.getGameRules().getBoolean(GameRules.MOB_GRIEFING) ? Explosion.DestructionType.DESTROY : Explosion.DestructionType.NONE;
+            world.createExplosion(null, DamageSource.netherBed(), pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D, 5.0F, true, type);
 
             // cancel sleeping
             ci.cancel();

@@ -13,14 +13,14 @@ import net.minecraft.entity.EquipmentSlot;
 
 @Mixin(ProtectionEnchantment.class)
 public abstract class ProtectionEnchantment_ProtectionStackingMixin extends Enchantment {
-    protected ProtectionEnchantment_ProtectionStackingMixin(Rarity weight, EnchantmentTarget type, EquipmentSlot[] slotTypes) {
+    protected ProtectionEnchantment_ProtectionStackingMixin(Weight weight, EnchantmentTarget type, EquipmentSlot[] slotTypes) {
         super(weight, type, slotTypes);
     }
 
-    @Inject(method = "canAccept", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "differs", at = @At("HEAD"), cancellable = true)
     private void modifyCanAccept(Enchantment other, CallbackInfoReturnable<Boolean> cir) {
         if(MiniTweaksSettings.protectionStacking) {
-            cir.setReturnValue(super.canAccept(other));
+            cir.setReturnValue(super.differs(other));
         }
     }
 }

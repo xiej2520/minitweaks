@@ -1,5 +1,6 @@
 package minitweaks.mixins;
 
+/* Bug does not exist in 1.15.2
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -22,3 +23,4 @@ public abstract class ShulkerLidCollisions_TeleportFixMixin {
         }
     }
 }
+*/

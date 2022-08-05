@@ -39,12 +39,12 @@ public abstract class ShovelItem_PathMixin {
 
     @Shadow
     @Final
-    private static Map<Block, BlockState> PATH_STATES;
+    private static Map<Block, BlockState> PATH_BLOCKSTATES;
 
     @Inject(method = "useOnBlock", at = @At(value = "INVOKE", target = "Ljava/util/Map;get(Ljava/lang/Object;)Ljava/lang/Object;"), cancellable = true, locals = LocalCapture.CAPTURE_FAILHARD)
     private void dirtToPaths(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir, World world, BlockPos blockPos, BlockState blockState, PlayerEntity playerEntity) {
         Block block = blockState.getBlock();
-        if(MiniTweaksSettings.morePaveableBlocks && !world.isClient && !PATH_STATES.containsKey(block)) {
+        if(MiniTweaksSettings.morePaveableBlocks && !world.isClient && !PATH_BLOCKSTATES.containsKey(block)) {
             BlockState pathBlockState = EXTRA_PATH_STATES.get(block);
             if(pathBlockState != null && world.getBlockState(blockPos.up()).isAir()) {
                 world.setBlockState(blockPos, pathBlockState, 11);

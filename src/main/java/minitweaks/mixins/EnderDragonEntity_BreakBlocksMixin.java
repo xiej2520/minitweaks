@@ -13,8 +13,8 @@ import net.minecraft.world.World;
 
 @Mixin(EnderDragonEntity.class)
 public abstract class EnderDragonEntity_BreakBlocksMixin {
-    @Redirect(method = "destroyBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$Key;)Z"))
-    private boolean gameruleCheck(GameRules gamerules, GameRules.Key<GameRules.BooleanRule> gameruleKey) {
+    @Redirect(method = "method_6821", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/GameRules;getBoolean(Lnet/minecraft/world/GameRules$RuleKey;)Z"))
+    private boolean gameruleCheck(GameRules gamerules, GameRules.RuleKey<GameRules.BooleanRule> gameruleKey) {
         // if block breaking type is not none, otherwise return gamerule value
         if(MiniTweaksSettings.dragonBlockDamage != BlockBreakingType.DEFAULT) {
             // if block breaking type is none, return gamerule value as false
@@ -23,7 +23,7 @@ public abstract class EnderDragonEntity_BreakBlocksMixin {
         return gamerules.getBoolean(gameruleKey);
     }
 
-    @Redirect(method = "destroyBlocks", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
+    @Redirect(method = "method_6821", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;removeBlock(Lnet/minecraft/util/math/BlockPos;Z)Z"))
     private boolean destroyType(World world, BlockPos pos, boolean move) {
         // this mixin shouldn't run if block breaking type is none
         // if block breaking type is not break, remove block
