@@ -1,27 +1,28 @@
 {
   "schemaVersion": 1,
-  "id": "minitweaks",
+  "id": "shulker_cloning_backport",
   "version": "${version}",
-  "name": "MiniTweaks",
-  "description": "Some small game mechanic changes, mainly for survival",
+  "name": "Shulker Cloning Backport",
+  "description": "Shulker cloning backport to 1.15.2, forked directly from manyrandomthings' minitweaks.",
   "authors": [
-    "manyrandomthings"
+    "manyrandomthings",
+    "xiej2520"
   ],
   "contact": {
-    "homepage": "https://github.com/manyrandomthings/minitweaks",
-    "issues": "https://github.com/manyrandomthings/minitweaks/issues",
-    "sources": "https://github.com/manyrandomthings/minitweaks"
+    "homepage": "https://github.com/xiej2520/minitweaks",
+    "issues": "https://github.com/xiej2520/minitweaks/issues",
+    "sources": "https://github.com/xiej2520/minitweaks"
   },
   "license": "LGPL-3.0-or-later",
   "icon": "assets/minitweaks/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "minitweaks.MiniTweaks"
+      "shulkerclone.ShulkerClone"
     ]
   },
   "mixins": [
-    "minitweaks.mixins.json"
+    "shulkerclone.mixins.json"
   ],
   "depends": {
     "minecraft": "~1.15.2",

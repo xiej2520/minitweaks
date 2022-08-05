@@ -1,4 +1,4 @@
-package minitweaks.mixins;
+package shulkerclone.mixins;
 
 import java.util.Optional;
 

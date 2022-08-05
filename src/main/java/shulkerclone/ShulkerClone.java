@@ -1,4 +1,4 @@
-package minitweaks;
+package shulkerclone;
 
 import carpet.CarpetExtension;
 import carpet.CarpetServer;
@@ -6,22 +6,22 @@ import carpet.settings.ParsedRule;
 import carpet.settings.SettingsManager;
 import net.fabricmc.api.ModInitializer;
 
-public class MiniTweaks implements CarpetExtension, ModInitializer {
+public class ShulkerClone implements CarpetExtension, ModInitializer {
     public static SettingsManager settingsManager;
 
     @Override
     public void onInitialize() {
-        CarpetServer.manageExtension(new MiniTweaks());
+        CarpetServer.manageExtension(new ShulkerClone());
     }
 
     @Override
     public void onGameStarted() {
         // create custom settingsManager
-        settingsManager = new SettingsManager(null, MiniTweaksRuleCategory.MODNAME, "MiniTweaks");
-        settingsManager.parseSettingsClass(MiniTweaksSettings.class);
+        settingsManager = new SettingsManager(null, "shulkerclone", "ShulkerClone");
+        settingsManager.parseSettingsClass(ShulkerCloneSettings.class);
 
         // load minitweaks settings to carpet
-        CarpetServer.settingsManager.parseSettingsClass(MiniTweaksSettings.class);
+        CarpetServer.settingsManager.parseSettingsClass(ShulkerCloneSettings.class);
 
         // workaround for rule being overwritten: https://github.com/gnembon/fabric-carpet/issues/802
         CarpetServer.settingsManager.addRuleObserver((source, rule, value) -> {

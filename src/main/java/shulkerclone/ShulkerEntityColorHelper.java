@@ -1,6 +1,6 @@
-package minitweaks;
+package shulkerclone;
 
-import minitweaks.mixins.ShulkerEntity_TrackerKeysAccessorMixin;
+import shulkerclone.mixins.ShulkerEntity_TrackerKeysAccessorMixin;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.mob.ShulkerEntity;

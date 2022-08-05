@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "shulkerclone.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ShulkerEntity_BulletCloneMixin",
+    "ShulkerEntity_TrackerKeysAccessorMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

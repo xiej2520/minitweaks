@@ -1,4 +1,4 @@
-package minitweaks.mixins;
+package shulkerclone.mixins;
 
 import java.util.Optional;
 
@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import minitweaks.MiniTweaksSettings;
-import minitweaks.ShulkerEntityColorHelper;
+import shulkerclone.ShulkerCloneSettings;
+import shulkerclone.ShulkerEntityColorHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.damage.DamageSource;
@@ -37,7 +37,7 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
     @Inject(method = "damage", at = @At("RETURN"), cancellable = true)
     private void cloneShulker(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         // check if return value is true and rule is enabled
-        if(cir.getReturnValue() && MiniTweaksSettings.shulkerCloning && source.isProjectile()) {
+        if(cir.getReturnValue() && ShulkerCloneSettings.shulkerCloning && source.isProjectile()) {
             Entity sourceEntity = source.getSource();
             if(sourceEntity != null && sourceEntity.getType() == EntityType.SHULKER_BULLET) {
                 this.spawnClone();
@@ -74,7 +74,7 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
     public void copyFrom(Entity original) {
         super.copyFrom(original);
 
-        if(MiniTweaksSettings.shulkerPortalFix) {
+        if(ShulkerCloneSettings.shulkerPortalFix) {
             // reset attached face and attached block to default values
             // fixes MC-139265, MC-168900 (probably)
             this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey(), Direction.DOWN);
