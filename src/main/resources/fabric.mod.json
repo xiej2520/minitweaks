@@ -14,7 +14,7 @@
     "sources": "https://github.com/xiej2520/minitweaks"
   },
   "license": "LGPL-3.0-or-later",
-  "icon": "assets/minitweaks/icon.png",
+  "icon": "assets/shulkerclone/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
