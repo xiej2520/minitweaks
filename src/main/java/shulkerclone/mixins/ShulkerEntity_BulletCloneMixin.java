@@ -8,16 +8,15 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.PistonBlock;
 import net.minecraft.block.PistonHeadBlock;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.*;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import shulkerclone.ShulkerCloneSettings;
@@ -38,13 +37,22 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
         super(entityType, world);
     }
 
-    // isClosed() in 1.16+
-    @Shadow
-    protected abstract boolean method_7124();
 
-    // tryTeleport in 1.16+
-    // @Shadow
-    // protected abstract boolean method_7127();
+    @Shadow
+    protected abstract boolean method_7124(); // isClosed() in 1.16+
+
+    @Shadow
+    protected abstract boolean method_7127(); // tryTeleport() in 1.16+
+
+    @Shadow
+    private float field_7339; // prevOpenProgress
+    @Shadow
+    private float field_7337; // openProgress
+    @Shadow
+    private BlockPos field_7345 = null; // prevAttachedBlock
+    @Shadow
+    private int field_7340; // teleportLerpTimer
+
 
     // shulker cloning from 20w45a
     @Inject(method = "damage", at = @At("RETURN"), cancellable = true)
@@ -116,148 +124,137 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
         return wm.isDirectionSolid(pos.offset(attachSide), this, attachSide.getOpposite()) && wm.isSpaceEmpty(this, ShulkerLidCollisions.getLidCollisionBox(pos, attachSide.getOpposite()));
     }
 
-    /**
-     * @author xiej2520
-     * @reason idk how to inject the method properly, someone help
-     * bugfix for MC-159773
-     */
-    @Overwrite
-    public boolean method_7127() {
-        if (!this.isAiDisabled() && this.isAlive()) {
-            BlockPos blockPos = this.getBlockPos();
-            WorldMixinAccess wm = (WorldMixinAccess) this.world;
+    @Inject(method = "method_7127", at = @At("HEAD"), cancellable = true)
+    public void tryTeleport(CallbackInfoReturnable<Boolean> cir) {
+        // bugfix for MC-159773
+        if(ShulkerCloneSettings.shulkerBlockFaceFix) {
+            if (!this.isAiDisabled() && this.isAlive()) {
+                BlockPos blockPos = this.getBlockPos();
+                WorldMixinAccess wm = (WorldMixinAccess) this.world;
 
-            for(int i = 0; i < 5; ++i) {
-                BlockPos blockPos2 = blockPos.add(8 - this.random.nextInt(17), 8 - this.random.nextInt(17), 8 - this.random.nextInt(17));
-                if (blockPos2.getY() > 0 && this.world.isAir(blockPos2) && this.world.getWorldBorder().contains(blockPos2) && wm.isSpaceEmpty(this, new Box(blockPos2))) {
-                    Direction direction = this.findAttachSide(blockPos2);
-                    if (direction != null) {
-                        this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey(), direction);
-                        this.playSound(SoundEvents.ENTITY_SHULKER_TELEPORT, 1.0F, 1.0F);
-                        this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos2));
-                        this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getPeekAmountTrackerKey(), (byte)0);
-                        this.setTarget((LivingEntity)null);
-                        return true;
+                for (int i = 0; i < 5; ++i) {
+                    BlockPos blockPos2 = blockPos.add(8 - this.random.nextInt(17), 8 - this.random.nextInt(17), 8 - this.random.nextInt(17));
+                    if (blockPos2.getY() > 0 && this.world.isAir(blockPos2) && this.world.getWorldBorder().contains(blockPos2) && wm.isSpaceEmpty(this, new Box(blockPos2))) {
+                        Direction direction = this.findAttachSide(blockPos2);
+                        if (direction != null) {
+                            this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey(), direction);
+                            this.playSound(SoundEvents.ENTITY_SHULKER_TELEPORT, 1.0F, 1.0F);
+                            this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos2));
+                            this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getPeekAmountTrackerKey(), (byte) 0);
+                            this.setTarget(null);
+                            cir.setReturnValue(true); // end method_7127() call
+                            return;
+                        }
                     }
                 }
-            }
 
-            return false;
-        } else {
-            return true;
+                cir.setReturnValue(false);
+            } else {
+                cir.setReturnValue(true);
+            }
         }
     }
 
     public Direction getAttachedFace() {
-        return (Direction) this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey());
+        return this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey());
     }
     public int getPeekAmount() {
-        return (Byte) this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getPeekAmountTrackerKey());
+        return this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getPeekAmountTrackerKey());
     }
-    @Shadow
-    private float field_7339; // prevOpenProgress
-    @Shadow
-    private float field_7337; // openProgress
-    @Shadow
-    private BlockPos field_7345 = null; // prevAttachedBlock
-    @Shadow
-    private int field_7340; // teleportLerpTimer
 
-    /**
-     * @author xiej2520
-     * @reason idk how to inject the method properly, someone help
-     * bugfix for MC-159773
-     */
-    @Overwrite
-    public void tick() {
-        super.tick();
-        BlockPos blockPos = (BlockPos)((Optional)this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey())).orElse((Object)null);
-        if (blockPos == null && !this.world.isClient) {
-            blockPos = this.getBlockPos();
-            this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos));
-        }
+    /** code is directly from 1.16 bindings to recreate proper behavior **/
+    @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
+    public void tickUpdated(CallbackInfo ci) {
+        if (ShulkerCloneSettings.shulkerBlockFaceFix) { // bugfix for MC-159773
+            super.tick();
+            BlockPos blockPos = (BlockPos) ((Optional) this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey())).orElse(null);
+            if (blockPos == null && !this.world.isClient) {
+                blockPos = this.getBlockPos();
+                this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos));
+            }
 
-        float g;
-        if (this.hasVehicle()) {
-            blockPos = null;
-            g = this.getVehicle().yaw;
-            this.yaw = g;
-            this.bodyYaw = g;
-            this.prevBodyYaw = g;
-            this.field_7340 = 0;
-        } else if (!this.world.isClient) {
-            BlockState blockState = this.world.getBlockState(blockPos);
-            Direction direction2;
-            if (!blockState.isAir()) {
-                if (blockState.getBlock() == Blocks.MOVING_PISTON) { // blockState.isOf(Blocks.MOVING_PISTON)
-                    direction2 = (Direction)blockState.get(PistonBlock.FACING);
-                    if (this.world.isAir(blockPos.offset(direction2))) {
-                        blockPos = blockPos.offset(direction2);
-                        this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos));
+            float g;
+            if (this.hasVehicle()) {
+                blockPos = null;
+                g = this.getVehicle().yaw;
+                this.yaw = g;
+                this.bodyYaw = g;
+                this.prevBodyYaw = g;
+                this.field_7340 = 0;
+            } else if (!this.world.isClient) {
+                BlockState blockState = this.world.getBlockState(blockPos);
+                Direction direction2;
+                if (!blockState.isAir()) {
+                    if (blockState.getBlock() == Blocks.MOVING_PISTON) { // blockState.isOf(Blocks.MOVING_PISTON)
+                        direction2 = blockState.get(PistonBlock.FACING);
+                        if (this.world.isAir(blockPos.offset(direction2))) {
+                            blockPos = blockPos.offset(direction2);
+                            this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos));
+                        } else {
+                            this.method_7127();
+                        }
+                    } else if (blockState.getBlock() == Blocks.PISTON_HEAD) { // blockState.isOf(Blocks.PISTON_HEAD)
+                        direction2 = blockState.get(PistonHeadBlock.FACING);
+                        if (this.world.isAir(blockPos.offset(direction2))) {
+                            blockPos = blockPos.offset(direction2);
+                            this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos));
+                        } else {
+                            this.method_7127();
+                        }
                     } else {
                         this.method_7127();
                     }
-                } else if (blockState.getBlock() == Blocks.PISTON_HEAD) { // blockState.isOf(Blocks.PISTON_HEAD)
-                    direction2 = (Direction)blockState.get(PistonHeadBlock.FACING);
-                    if (this.world.isAir(blockPos.offset(direction2))) {
-                        blockPos = blockPos.offset(direction2);
-                        this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos));
+                }
+
+                direction2 = this.getAttachedFace();
+                if (!this.canStay(blockPos, direction2)) {
+                    Direction direction4 = this.findAttachSide(blockPos);
+                    if (direction4 != null) {
+                        this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey(), direction4);
                     } else {
                         this.method_7127();
                     }
-                } else {
-                    this.method_7127();
                 }
             }
 
-            direction2 = this.getAttachedFace();
-            if (!this.canStay(blockPos, direction2)) {
-                Direction direction4 = this.findAttachSide(blockPos);
-                if (direction4 != null) {
-                    this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey(), direction4);
-                } else {
-                    this.method_7127();
-                }
-            }
-        }
-
-        g = (float)this.getPeekAmount() * 0.01F;
-        this.field_7339 = this.field_7337;
-        if (this.field_7337 > g) {
-            this.field_7337 = MathHelper.clamp(this.field_7337 - 0.05F, g, 1.0F);
-        } else if (this.field_7337 < g) {
-            this.field_7337 = MathHelper.clamp(this.field_7337 + 0.05F, 0.0F, g);
-        }
-
-        if (blockPos != null) {
-            if (this.world.isClient) {
-                if (this.field_7340 > 0 && this.field_7345 != null) {
-                    --this.field_7340;
-                } else {
-                    this.field_7345 = blockPos;
-                }
+            g = (float) this.getPeekAmount() * 0.01F;
+            this.field_7339 = this.field_7337;
+            if (this.field_7337 > g) {
+                this.field_7337 = MathHelper.clamp(this.field_7337 - 0.05F, g, 1.0F);
+            } else if (this.field_7337 < g) {
+                this.field_7337 = MathHelper.clamp(this.field_7337 + 0.05F, 0.0F, g);
             }
 
-            this.resetPosition((double)blockPos.getX() + 0.5D, (double)blockPos.getY(), (double)blockPos.getZ() + 0.5D);
-            double d = 0.5D - (double)MathHelper.sin((0.5F + this.field_7337) * 3.1415927F) * 0.5D;
-            double e = 0.5D - (double)MathHelper.sin((0.5F + this.field_7339) * 3.1415927F) * 0.5D;
-            Direction direction5 = this.getAttachedFace().getOpposite();
-            this.setBoundingBox((new Box(this.getX() - 0.5D, this.getY(), this.getZ() - 0.5D, this.getX() + 0.5D, this.getY() + 1.0D, this.getZ() + 0.5D)).stretch((double)direction5.getOffsetX() * d, (double)direction5.getOffsetY() * d, (double)direction5.getOffsetZ() * d));
-            double h = d - e;
-            if (h > 0.0D) {
-                List<Entity> list = this.world.getEntities(this, this.getBoundingBox()); // getOtherEntities in 1.16+
-                if (!list.isEmpty()) {
-                    Iterator var11 = list.iterator();
+            if (blockPos != null) {
+                if (this.world.isClient) {
+                    if (this.field_7340 > 0 && this.field_7345 != null) {
+                        --this.field_7340;
+                    } else {
+                        this.field_7345 = blockPos;
+                    }
+                }
 
-                    while(var11.hasNext()) {
-                        Entity entity = (Entity)var11.next();
-                        if (!(entity instanceof ShulkerEntity) && !entity.noClip) {
-                            entity.move(MovementType.SHULKER, new Vec3d(h * (double)direction5.getOffsetX(), h * (double)direction5.getOffsetY(), h * (double)direction5.getOffsetZ()));
+                this.resetPosition((double) blockPos.getX() + 0.5D, (double) blockPos.getY(), (double) blockPos.getZ() + 0.5D);
+                double d = 0.5D - (double) MathHelper.sin((0.5F + this.field_7337) * 3.1415927F) * 0.5D;
+                double e = 0.5D - (double) MathHelper.sin((0.5F + this.field_7339) * 3.1415927F) * 0.5D;
+                Direction direction5 = this.getAttachedFace().getOpposite();
+                this.setBoundingBox((new Box(this.getX() - 0.5D, this.getY(), this.getZ() - 0.5D, this.getX() + 0.5D, this.getY() + 1.0D, this.getZ() + 0.5D)).stretch((double) direction5.getOffsetX() * d, (double) direction5.getOffsetY() * d, (double) direction5.getOffsetZ() * d));
+                double h = d - e;
+                if (h > 0.0D) {
+                    List<Entity> list = this.world.getEntities(this, this.getBoundingBox()); // getOtherEntities in 1.16+
+                    if (!list.isEmpty()) {
+                        Iterator var11 = list.iterator();
+
+                        while (var11.hasNext()) {
+                            Entity entity = (Entity) var11.next();
+                            if (!(entity instanceof ShulkerEntity) && !entity.noClip) {
+                                entity.move(MovementType.SHULKER, new Vec3d(h * (double) direction5.getOffsetX(), h * (double) direction5.getOffsetY(), h * (double) direction5.getOffsetZ()));
+                            }
                         }
                     }
                 }
             }
+            ci.cancel(); // end tick() call if shulkerBlockFaceFix active
         }
-
     }
 }

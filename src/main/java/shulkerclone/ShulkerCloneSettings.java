@@ -27,4 +27,15 @@ public class ShulkerCloneSettings {
         category = {"shulkerclone", "mobs", RuleCategory.SURVIVAL, RuleCategory.BUGFIX}
     )
     public static boolean shulkerPortalFix = false;
+
+    // Shulker non-full face teleport fix
+    @Rule(
+            desc = "Shulker non-full face block teleportation fix",
+            extra = {
+                    "Fixes MC-159773, so shulkers properly teleport away from the faces of blocks that aren't flat",
+                    "and allows them to attach to bottom slabs/stairs."
+            },
+            category = {"shulkerclone", "mobs", RuleCategory.SURVIVAL, RuleCategory.BUGFIX}
+    )
+    public static boolean shulkerBlockFaceFix = false;
 }
