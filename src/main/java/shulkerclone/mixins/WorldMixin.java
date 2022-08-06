@@ -23,6 +23,9 @@ import java.util.Set;
 
 @Mixin(World.class)
 public abstract class WorldMixin implements WorldMixinAccess, IWorld, AutoCloseable {
+    // mixin for World methods that shulkers use in 1.16+ but are not present in 1.15-
+    // e.g. used by ShulkerEntity for canStay(), findAttachSide(), tick() in 1.16+
+    /** The following code comes *directly* from 1.16 (Mojang), bindings from fabric! **/
 
     @Shadow public abstract World getWorld();
 

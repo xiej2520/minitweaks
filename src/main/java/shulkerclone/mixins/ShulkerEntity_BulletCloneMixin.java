@@ -45,6 +45,10 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
     protected abstract boolean method_7127(); // tryTeleport() in 1.16+
 
     @Shadow
+    public abstract Direction getAttachedFace();
+    @Shadow
+    public abstract int getPeekAmount();
+    @Shadow
     private float field_7339; // prevOpenProgress
     @Shadow
     private float field_7337; // openProgress
@@ -55,7 +59,7 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
 
 
     // shulker cloning from 20w45a
-    @Inject(method = "damage", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "damage", at = @At("RETURN"))
     private void cloneShulker(DamageSource source, float amount, CallbackInfoReturnable<Boolean> cir) {
         // check if return value is true and rule is enabled
         if(cir.getReturnValue() && ShulkerCloneSettings.shulkerCloning && source.isProjectile()) {
@@ -76,13 +80,15 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
             float cloneOdds = (float) (shulkersCount - 1) / 5.0F;
             if(cloneOdds <= this.world.random.nextFloat()) {
                 ShulkerEntity shulkerEntity = EntityType.SHULKER.create(this.world);
+                if (shulkerEntity == null) {
+                    return;
+                }
                 // replace with this.getColor() in 1.17
                 DyeColor dyeColor = ShulkerEntityColorHelper.getColor((ShulkerEntity) (Object) this);
                 if(dyeColor != null) {
                     // replace with shulkerEntity.setColor(dyeColor) in 1.17
                     ShulkerEntityColorHelper.setColor(shulkerEntity, dyeColor);
                 }
-
 
                 shulkerEntity.positAfterTeleport(pos.x, pos.y, pos.z);
                 this.world.spawnEntity(shulkerEntity);
@@ -104,7 +110,8 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
     }
 
 
-    // 1.16 shulker MC-159773 fixes
+    /** following code is directly from 1.16 (Mojang) bindings by fabric for proper behavior **/
+    // 1.16 shulker MC-159773 fixes and related methods
     @Nullable
     protected Direction findAttachSide(BlockPos pos) {
         Direction[] var2 = Direction.values();
@@ -120,6 +127,7 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
         return null;
     }
     private boolean canStay(BlockPos pos, Direction attachSide) {
+        // only necessary because World does not have newer methods from 1.16+
         WorldMixinAccess wm = (WorldMixinAccess) world;
         return wm.isDirectionSolid(pos.offset(attachSide), this, attachSide.getOpposite()) && wm.isSpaceEmpty(this, ShulkerLidCollisions.getLidCollisionBox(pos, attachSide.getOpposite()));
     }
@@ -155,19 +163,11 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
         }
     }
 
-    public Direction getAttachedFace() {
-        return this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedFaceTrackerKey());
-    }
-    public int getPeekAmount() {
-        return this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getPeekAmountTrackerKey());
-    }
-
-    /** code is directly from 1.16 bindings to recreate proper behavior **/
     @Inject(method = "tick", at = @At("HEAD"), cancellable = true)
     public void tickUpdated(CallbackInfo ci) {
         if (ShulkerCloneSettings.shulkerBlockFaceFix) { // bugfix for MC-159773
             super.tick();
-            BlockPos blockPos = (BlockPos) ((Optional) this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey())).orElse(null);
+            BlockPos blockPos = this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey()).orElse(null);
             if (blockPos == null && !this.world.isClient) {
                 blockPos = this.getBlockPos();
                 this.dataTracker.set(ShulkerEntity_TrackerKeysAccessorMixin.getAttachedBlockTrackerKey(), Optional.of(blockPos));
@@ -243,10 +243,10 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
                 if (h > 0.0D) {
                     List<Entity> list = this.world.getEntities(this, this.getBoundingBox()); // getOtherEntities in 1.16+
                     if (!list.isEmpty()) {
-                        Iterator var11 = list.iterator();
+                        Iterator<Entity> var11 = list.iterator();
 
                         while (var11.hasNext()) {
-                            Entity entity = (Entity) var11.next();
+                            Entity entity = var11.next();
                             if (!(entity instanceof ShulkerEntity) && !entity.noClip) {
                                 entity.move(MovementType.SHULKER, new Vec3d(h * (double) direction5.getOffsetX(), h * (double) direction5.getOffsetY(), h * (double) direction5.getOffsetZ()));
                             }

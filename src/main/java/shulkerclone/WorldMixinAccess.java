@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Set;
 
 public interface WorldMixinAccess {
+    // 1.16+ World methods implemented in WorldMixin and exposed to ShulkerEntity_BulletCloneMixin
 
     boolean isDirectionSolid(BlockPos pos, Entity entity, Direction direction);
     boolean hasSolidTopSurface(BlockState block, BlockView world, BlockPos pos, Entity entity, Direction direction);
