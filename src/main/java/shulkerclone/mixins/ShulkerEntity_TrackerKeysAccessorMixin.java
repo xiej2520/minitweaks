@@ -29,4 +29,10 @@ public interface ShulkerEntity_TrackerKeysAccessorMixin {
     static TrackedData<Optional<BlockPos>> getAttachedBlockTrackerKey() {
         throw new AssertionError("Untransformed accessor mixin");
     }
+
+    // ShulkerEntity.PEEK_AMOUNT datatracker key
+    @Accessor("PEEK_AMOUNT")
+    static TrackedData<Byte> getPeekAmountTrackerKey() {
+        throw new AssertionError("Untransformed accessor mixin");
+    }
 }

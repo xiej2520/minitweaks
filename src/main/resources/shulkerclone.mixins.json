@@ -4,7 +4,8 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "ShulkerEntity_BulletCloneMixin",
-    "ShulkerEntity_TrackerKeysAccessorMixin"
+    "ShulkerEntity_TrackerKeysAccessorMixin",
+    "WorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1
