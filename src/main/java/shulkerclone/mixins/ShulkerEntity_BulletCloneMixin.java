@@ -154,12 +154,15 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
     public int getPeekAmount() {
         return (Byte) this.dataTracker.get(ShulkerEntity_TrackerKeysAccessorMixin.getPeekAmountTrackerKey());
     }
+    @Shadow
+    private float field_7339; // prevOpenProgress
+    @Shadow
+    private float field_7337; // openProgress
+    @Shadow
+    private BlockPos field_7345 = null; // prevAttachedBlock
+    @Shadow
+    private int field_7340; // teleportLerpTimer
 
-    private int teleportLerpTimer;
-    private float prevOpenProgress;
-    private float openProgress;
-    private BlockPos prevAttachedBlock = null;
-    
     /**
      * @author xiej2520
      * @reason idk how to inject the method properly, someone help
@@ -181,7 +184,7 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
             this.yaw = g;
             this.bodyYaw = g;
             this.prevBodyYaw = g;
-            this.teleportLerpTimer = 0;
+            this.field_7340 = 0;
         } else if (!this.world.isClient) {
             BlockState blockState = this.world.getBlockState(blockPos);
             Direction direction2;
@@ -219,25 +222,25 @@ public abstract class ShulkerEntity_BulletCloneMixin extends GolemEntity {
         }
 
         g = (float)this.getPeekAmount() * 0.01F;
-        this.prevOpenProgress = this.openProgress;
-        if (this.openProgress > g) {
-            this.openProgress = MathHelper.clamp(this.openProgress - 0.05F, g, 1.0F);
-        } else if (this.openProgress < g) {
-            this.openProgress = MathHelper.clamp(this.openProgress + 0.05F, 0.0F, g);
+        this.field_7339 = this.field_7337;
+        if (this.field_7337 > g) {
+            this.field_7337 = MathHelper.clamp(this.field_7337 - 0.05F, g, 1.0F);
+        } else if (this.field_7337 < g) {
+            this.field_7337 = MathHelper.clamp(this.field_7337 + 0.05F, 0.0F, g);
         }
 
         if (blockPos != null) {
             if (this.world.isClient) {
-                if (this.teleportLerpTimer > 0 && this.prevAttachedBlock != null) {
-                    --this.teleportLerpTimer;
+                if (this.field_7340 > 0 && this.field_7345 != null) {
+                    --this.field_7340;
                 } else {
-                    this.prevAttachedBlock = blockPos;
+                    this.field_7345 = blockPos;
                 }
             }
 
             this.resetPosition((double)blockPos.getX() + 0.5D, (double)blockPos.getY(), (double)blockPos.getZ() + 0.5D);
-            double d = 0.5D - (double)MathHelper.sin((0.5F + this.openProgress) * 3.1415927F) * 0.5D;
-            double e = 0.5D - (double)MathHelper.sin((0.5F + this.prevOpenProgress) * 3.1415927F) * 0.5D;
+            double d = 0.5D - (double)MathHelper.sin((0.5F + this.field_7337) * 3.1415927F) * 0.5D;
+            double e = 0.5D - (double)MathHelper.sin((0.5F + this.field_7339) * 3.1415927F) * 0.5D;
             Direction direction5 = this.getAttachedFace().getOpposite();
             this.setBoundingBox((new Box(this.getX() - 0.5D, this.getY(), this.getZ() - 0.5D, this.getX() + 0.5D, this.getY() + 1.0D, this.getZ() + 0.5D)).stretch((double)direction5.getOffsetX() * d, (double)direction5.getOffsetY() * d, (double)direction5.getOffsetZ() * d));
             double h = d - e;
